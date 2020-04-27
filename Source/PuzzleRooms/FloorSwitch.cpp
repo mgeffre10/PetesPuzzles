@@ -4,6 +4,7 @@
 #include "FloorSwitch.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/Material.h"
 #include "TimerManager.h"
 
 // Sets default values
@@ -20,10 +21,19 @@ AFloorSwitch::AFloorSwitch()
 	TriggerVolume->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	TriggerVolume->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 
-	FloorSwitch = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorSwitch"));
-	FloorSwitch->SetupAttachment(GetRootComponent());
+	FloorSwitchBorder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorSwitchBorder"));
+	FloorSwitchBorder->SetupAttachment(GetRootComponent());
+
+	FloorSwitchButton = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorSwitchButton"));
+	FloorSwitchButton->SetupAttachment(FloorSwitchBorder);
+
+	if (ButtonReleasedMaterial)
+	{
+		FloorSwitchButton->SetMaterial(0, ButtonReleasedMaterial);
+	}
+	
 
 	Door = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Door"));
 	Door->SetupAttachment(GetRootComponent());
@@ -37,7 +47,7 @@ void AFloorSwitch::BeginPlay()
 	Super::BeginPlay();
 	
 	InitialDoorPosition = Door->GetComponentLocation();
-	InitialFloorSwitchPosition = FloorSwitch->GetComponentLocation();
+	InitialFloorSwitchPosition = FloorSwitchButton->GetComponentLocation();
 
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &AFloorSwitch::OnOverlapBegin);
 	TriggerVolume->OnComponentEndOverlap.AddDynamic(this, &AFloorSwitch::OnOverlapEnd);
@@ -56,6 +66,11 @@ void AFloorSwitch::CloseDoor()
 	{
 		LowerDoor();
 		RaiseFloorSwitch();
+
+		if (ButtonReleasedMaterial)
+		{
+			FloorSwitchButton->SetMaterial(0, ButtonReleasedMaterial);
+		}
 	}
 }
 
@@ -70,12 +85,18 @@ void AFloorSwitch::UpdateFloorSwitchPosition(float Z)
 {
 	FVector NewPosition = InitialFloorSwitchPosition;
 	NewPosition.Z += Z;
-	FloorSwitch->SetWorldLocation(NewPosition);
+	FloorSwitchButton->SetWorldLocation(NewPosition);
 }
 
 void AFloorSwitch::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	OverlappingActors++;
+
+	if (ButtonPressedMaterial)
+	{
+		FloorSwitchButton->SetMaterial(0, ButtonPressedMaterial);
+	}
+
 	RaiseDoor();
 	LowerFloorSwitch();
 }

@@ -16,29 +16,39 @@ public:
 	AFloorSwitch();
 
 	/** Component to handle overlap functionality */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Floor Switch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Properties")
 	class UBoxComponent* TriggerVolume;
 
 	/** Mesh for the floor switch */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
-	class UStaticMeshComponent* FloorSwitch;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
+	class UStaticMeshComponent* FloorSwitchBorder;
+
+	/** Mesh for the floor switch */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
+	class UStaticMeshComponent* FloorSwitchButton;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Properties")
+	class UMaterial* ButtonReleasedMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Properties")
+	UMaterial* ButtonPressedMaterial;
 
 	/** Mesh for the door */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	UStaticMeshComponent* Door;
 
 	/** Initial door position when game begins */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	FVector InitialDoorPosition;
 
 	/** Initial floor switch position when game begins */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	FVector InitialFloorSwitchPosition;
 
 	/** Array for actors overlapping with the floor switch */
 	int32 OverlappingActors;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Floor Switch")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	int32 SwitchDelay;
 
 	FTimerHandle SwitchHandle;

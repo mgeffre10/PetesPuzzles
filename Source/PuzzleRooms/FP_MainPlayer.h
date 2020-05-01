@@ -22,12 +22,12 @@ public:
 	bool bIsHoldingObject;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Liftables")
-	class AActor* HeldObjectRef;
+	class AInteractableObject* HeldObjectRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Liftables")
 	class UStaticMeshComponent* HeldObjectStaticMesh;
 
-	AActor* TracedObject;
+	AInteractableObject* TracedObject;
 
 	FHitResult HitResult;
 

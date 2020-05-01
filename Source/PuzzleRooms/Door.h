@@ -12,6 +12,7 @@ enum class EDoorRequirement : uint8 {
 	EDR_FloorSwitches		UMETA(DisplayName = "Floor Switches"),
 	EDR_ActorDestruction	UMETA(DisplayName = "Actor Destruction"),
 	EDR_Position			UMETA(DisplayName = "Position"),
+	EDR_None				UMETA(DisplayName = "None"),
 	EDR_MAX					UMETA(DisplayName = "EDR MAX")
 };
 
@@ -23,6 +24,9 @@ class PUZZLEROOMS_API ADoor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ADoor();
+
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+	class USceneComponent* SceneComponent;
 
 	/** Mesh for the door */ 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mesh")
@@ -38,13 +42,15 @@ public:
 	
 	/** Pointer reference to actor that needs to be destroyed if requirement is EDR_ActorDestruction */ 
 	UPROPERTY(EditInstanceOnly, Category = "Door Requirements")
-	TArray<AActor*> ActorsToBeDestroyed;
+	TArray<class AInteractableObject*> ActorsToBeDestroyed;
 
 	/** TArray to floor switch actors if requirement is EDR_FloorSwitches */ 
 	UPROPERTY(EditInstanceOnly, Category = "Door Requirements")
 	TArray<AFloorSwitch*> FloorSwitches;
 
-	/** Position range if requirement is EDR_Position */ 
+	/** Position range if requirement is EDR_Position */
+
+	bool bIsDoorOpen;
 
 protected:
 	// Called when the game starts or when spawned
@@ -65,8 +71,10 @@ public:
 	void CloseDoor();
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateDoorPosition(float Z);
+	void UpdateDoorPosition(float Y);
 
-	void ShutDoor();
+	bool AreButtonsPressed();
+
+	bool AreActorsDestroyed();
 
 };

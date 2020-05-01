@@ -21,7 +21,7 @@ AFloorSwitch::AFloorSwitch()
 	TriggerVolume->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	TriggerVolume->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
 
 	FloorSwitchBorder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorSwitchBorder"));
 	FloorSwitchBorder->SetupAttachment(GetRootComponent());
@@ -33,10 +33,6 @@ AFloorSwitch::AFloorSwitch()
 	{
 		FloorSwitchButton->SetMaterial(0, ButtonReleasedMaterial);
 	}
-	
-
-	Door = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Door"));
-	Door->SetupAttachment(GetRootComponent());
 
 	SwitchDelay = 2.f;
 }
@@ -46,7 +42,6 @@ void AFloorSwitch::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitialDoorPosition = Door->GetComponentLocation();
 	InitialFloorSwitchPosition = FloorSwitchButton->GetComponentLocation();
 
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &AFloorSwitch::OnOverlapBegin);
@@ -60,11 +55,11 @@ void AFloorSwitch::Tick(float DeltaTime)
 
 }
 
-void AFloorSwitch::CloseDoor()
+void AFloorSwitch::ReleaseButton()
 {
 	if (OverlappingActors == 0)
 	{
-		LowerDoor();
+		bIsPressed = false;
 		RaiseFloorSwitch();
 
 		if (ButtonReleasedMaterial)
@@ -74,11 +69,9 @@ void AFloorSwitch::CloseDoor()
 	}
 }
 
-void AFloorSwitch::UpdateDoorPosition(float Y)
+bool AFloorSwitch::IsButtonPressed()
 {
-	FVector NewPosition = InitialDoorPosition;
-	NewPosition.Y += Y;
-	Door->SetWorldLocation(NewPosition);
+	return bIsPressed;
 }
 
 void AFloorSwitch::UpdateFloorSwitchPosition(float Z)
@@ -97,7 +90,7 @@ void AFloorSwitch::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 		FloorSwitchButton->SetMaterial(0, ButtonPressedMaterial);
 	}
 
-	RaiseDoor();
+	bIsPressed = true;
 	LowerFloorSwitch();
 }
 
@@ -107,25 +100,11 @@ void AFloorSwitch::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 
 	if (SwitchDelay > 0)
 	{
-		GetWorldTimerManager().SetTimer(SwitchHandle, this, &AFloorSwitch::CloseDoor, SwitchDelay);
+		GetWorldTimerManager().SetTimer(SwitchHandle, this, &AFloorSwitch::ReleaseButton, SwitchDelay);
 	}
 	else
 	{
-		CloseDoor();
+		ReleaseButton();
 	}
 	
 }
-
-/*void AFloorSwitch::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangeEvent)
-{
-	FName PropertyName = PropertyChangeEvent.GetPropertyName();
-
-	if (PropertyName == "InitialDoorPosition")
-	{
-		Door->SetRelativeLocation(InitialDoorPosition);
-	}
-	else if (PropertyName == "InitialFloorSwitchPosition")
-	{
-		FloorSwitch->SetRelativeLocation(InitialFloorSwitchPosition);
-	}
-}*/

@@ -33,14 +33,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	UMaterial* ButtonPressedMaterial;
 
-	/** Mesh for the door */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
-	UStaticMeshComponent* Door;
-
-	/** Initial door position when game begins */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
-	FVector InitialDoorPosition;
-
 	/** Initial floor switch position when game begins */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Properties")
 	FVector InitialFloorSwitchPosition;
@@ -53,6 +45,8 @@ public:
 
 	FTimerHandle SwitchHandle;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Custom Properties")
+	bool bIsPressed;
 
 protected:
 	// Called when the game starts or when spawned
@@ -63,17 +57,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void RaiseDoor();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void LowerDoor();
-	
-	void CloseDoor();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateDoorPosition(float Y);
-
-	UFUNCTION(BlueprintImplementableEvent)
 	void RaiseFloorSwitch();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -82,11 +65,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateFloorSwitchPosition(float Z);
 
+	void ReleaseButton();
+
+	bool IsButtonPressed();
+
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	//virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 };

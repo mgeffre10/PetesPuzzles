@@ -38,12 +38,19 @@ void AFP_MainPlayer::Tick(float DeltaTime)
 	
 	if (!bIsHoldingObject)
 	{
-		GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, CameraLocation + (ForwardVector * 1000.f), ECollisionChannel::ECC_GameTraceChannel1);
+		GetWorld()->LineTraceSingleByObjectType(HitResult, CameraLocation, CameraLocation + (ForwardVector * 500.f), ECollisionChannel::ECC_GameTraceChannel3);
 
 		if (HitResult.bBlockingHit)
 		{
 			TracedObject = HitResult.GetActor();
-			UE_LOG(LogTemp, Warning, TEXT("TracedObject: %s"), *TracedObject->GetFName().ToString());
+			AInteractableObject* HitActor = Cast<AInteractableObject>(HitResult.GetActor());
+			if (TracedObject != HitActor)
+			{
+				TracedObject = HitActor;
+				UStaticMeshComponent* TracedObjectMeshComponent = Cast<UStaticMeshComponent>(TracedObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+				TracedObjectMeshComponent->SetRenderCustomDepth(true);
+				TracedObjectMeshComponent->SetCustomDepthStencilValue(2);
+			}
 		}
 		else
 		{
@@ -54,7 +61,7 @@ void AFP_MainPlayer::Tick(float DeltaTime)
 	{
 		if (HeldObjectRef)
 		{
-			HeldObjectRef->SetActorLocation(CameraLocation + (ForwardVector * 500.f));
+			HeldObjectRef->SetActorLocation(CameraLocation + (ForwardVector * 200.f));
 		}
 	}
 }

@@ -43,7 +43,6 @@ void AFP_MainPlayer::Tick(float DeltaTime)
 
 		if (HitResult.bBlockingHit)
 		{
-			TracedObject = HitResult.GetActor();
 			AInteractableObject* HitActor = Cast<AInteractableObject>(HitResult.GetActor());
 			if (TracedObject != HitActor)
 			{

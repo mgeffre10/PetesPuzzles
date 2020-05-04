@@ -2,6 +2,7 @@
 
 
 #include "FP_MainPlayer.h"
+#include "InteractableObject.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ActorComponent.h"
 #include "Components/InputComponent.h"

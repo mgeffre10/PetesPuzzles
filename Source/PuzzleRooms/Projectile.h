@@ -20,7 +20,7 @@ public:
 	class UStaticMeshComponent* StaticMesh;
 
 	// Projectile Speed
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	UPROPERTY()
 	float ProjectileSpeed;
 
 protected:
@@ -37,6 +37,7 @@ public:
 
 	FORCEINLINE UStaticMeshComponent* GetStaticMesh() { return StaticMesh; }
 	FORCEINLINE float GetProjectileSpeed() const { return ProjectileSpeed; }
+	FORCEINLINE	void SetProjectileSpeed(float Speed) { ProjectileSpeed = Speed; }
 	FORCEINLINE bool GetProjectileShouldMove() const { return bShouldMove; }
 	FORCEINLINE void SetProjectileShouldMove(bool Value) { bShouldMove = Value; }
 

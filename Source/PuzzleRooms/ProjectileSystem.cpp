@@ -18,6 +18,8 @@ AProjectileSystem::AProjectileSystem()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
 
+	ProjectileDecayTimer = 3.f;
+	ProjectileSpeed = 300.f;
 }
 
 // Called when the game starts or when spawned
@@ -38,7 +40,7 @@ void AProjectileSystem::BeginPlay()
 
 	if (bShouldContinueShooting)
 	{
-		Projectile = SpawnProjectile();
+		SpawnProjectile();
 		Projectile->SetProjectileShouldMove(true);
 	}
 }
@@ -65,16 +67,17 @@ void AProjectileSystem::CheckShouldContinueShooting()
 
 }
 
-AProjectile* AProjectileSystem::SpawnProjectile()
+void AProjectileSystem::SpawnProjectile()
 {
 	const FVector SpawnLocation = ShooterSpawnVolume->GetComponentLocation();
+
+	Projectile = GetWorld()->SpawnActor<AProjectile>(ActorToSpawn, SpawnLocation, ShooterSpawnVolume->GetComponentRotation());
+	Projectile->SetProjectileSpeed(ProjectileSpeed);
 
 	if (ProjectileDecayTimer > 0)
 	{
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectileSystem::DestroyProjectile, ProjectileDecayTimer, false);
 	}
-
-	return GetWorld()->SpawnActor<AProjectile>(ActorToSpawn, SpawnLocation, ShooterSpawnVolume->GetComponentRotation());
 }
 
 void AProjectileSystem::DestroyProjectile()
@@ -83,5 +86,5 @@ void AProjectileSystem::DestroyProjectile()
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 
 	Projectile->Destroy();
-	Projectile = SpawnProjectile();
+	SpawnProjectile();
 }

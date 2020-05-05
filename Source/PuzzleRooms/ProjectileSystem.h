@@ -25,15 +25,19 @@ public:
 	class AProjectileReceiver* ProjectileReceiver;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile System")
-	TSubclassOf<AProjectile> ActorToSpawn;
+	TSubclassOf<class AProjectile> ActorToSpawn;
 
 	// Reference to Projectile
-	class AProjectile* Projectile;
+	AProjectile* Projectile;
 
 	FTimerHandle TimerHandle;
 
 	// Time for Projectile Decay
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile System")
 	int ProjectileDecayTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile System")
+	float ProjectileSpeed;
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,7 +56,7 @@ public:
 	void CheckShouldContinueShooting();
 
 	UFUNCTION()
-	AProjectile* SpawnProjectile();
+	void SpawnProjectile();
 
 	UFUNCTION()
 	void DestroyProjectile();

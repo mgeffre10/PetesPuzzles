@@ -18,7 +18,6 @@ AProjectile::AProjectile()
 
 	StaticMesh->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
 
-	ProjectileSpeed = 300.f;
 	bShouldMove = true;
 }
 

@@ -6,6 +6,7 @@
 #include "ProjectileReceiver.h"
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 
@@ -14,12 +15,14 @@
 AProjectileSystem::AProjectileSystem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
+	// RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
 
-	ProjectileDecayTimer = 3.f;
-	ProjectileSpeed = 300.f;
+	ProjectileDecayTimer = 0.f;
+	ProjectileSpeed = 100000.f;
+
+	bHasSystemCompleted = false;
 }
 
 // Called when the game starts or when spawned
@@ -27,64 +30,76 @@ void AProjectileSystem::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (!ProjectileShooter || !ProjectileReceiver)
-	{
-		bShouldContinueShooting = false;
-	}
-	else
-	{
-		bShouldContinueShooting = true;
-	}
-
-	ShooterSpawnVolume = ProjectileShooter->GetSpawnVolume();
-
-	if (bShouldContinueShooting)
+	if (ProjectileShooter && ProjectileReceiver && ActorToSpawn)
 	{
 		SpawnProjectile();
-		Projectile->SetProjectileShouldMove(true);
+		AddForceToProjectile(Projectile->GetActorForwardVector(), Projectile->GetStaticMesh());
+
+		ProjectileReceiver->GetTriggerVolume()->OnComponentBeginOverlap.AddDynamic(this, &AProjectileSystem::OnOverlapBegin);
 	}
-}
-
-// Called every frame
-void AProjectileSystem::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (!bShouldContinueShooting)
-	{
-		Projectile->SetProjectileShouldMove(false);
-		Projectile->SetActorLocation(ProjectileReceiver->GetTriggerVolume()->GetComponentLocation());
-	}
-	else
-	{
-		CheckShouldContinueShooting();
-	}
-}
-
-void AProjectileSystem::CheckShouldContinueShooting()
-{
-	bShouldContinueShooting = !ProjectileReceiver->HasReceivedProjectile();
-
 }
 
 void AProjectileSystem::SpawnProjectile()
 {
-	const FVector SpawnLocation = ShooterSpawnVolume->GetComponentLocation();
-
-	Projectile = GetWorld()->SpawnActor<AProjectile>(ActorToSpawn, SpawnLocation, ShooterSpawnVolume->GetComponentRotation());
-	Projectile->SetProjectileSpeed(ProjectileSpeed);
-
-	if (ProjectileDecayTimer > 0)
+	if (!HasSystemCompleted())
 	{
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectileSystem::DestroyProjectile, ProjectileDecayTimer, false);
+		const UBoxComponent* SpawnVolume = ProjectileShooter->GetSpawnVolume();
+		const FVector SpawnLocation = SpawnVolume->GetComponentLocation();
+		const FRotator SpawnRotation = SpawnVolume->GetComponentRotation();
+
+		Projectile = GetWorld()->SpawnActor<AProjectile>(ActorToSpawn, SpawnLocation, SpawnRotation);
+		Projectile->OnActorHit.AddDynamic(this, &AProjectileSystem::OnHit);
+
+		if (ProjectileDecayTimer > 0)
+		{
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AProjectileSystem::DestroyProjectile, ProjectileDecayTimer, false);
+		}
 	}
 }
 
 void AProjectileSystem::DestroyProjectile()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DestroyProjectile called"));
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 
-	Projectile->Destroy();
-	SpawnProjectile();
+	if (!HasSystemCompleted())
+	{
+		Projectile->Destroy();
+		SpawnProjectile();
+		AddForceToProjectile(Projectile->GetActorForwardVector(), Projectile->GetStaticMesh());
+	}
+}
+
+void AProjectileSystem::AddForceToProjectile(FVector Direction, UStaticMeshComponent* Mesh)
+{
+	Mesh->AddForce(Direction * ProjectileSpeed);
+}
+
+void AProjectileSystem::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hit Impact Normal: %s"), *Hit.ImpactNormal.ToString());
+
+	AProjectile* CollidingActor = Cast<AProjectile>(SelfActor);
+
+	if (CollidingActor)
+	{
+		AddForceToProjectile(Hit.ImpactNormal, CollidingActor->GetStaticMesh());
+	}
+}
+
+void AProjectileSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnOverlapBegin() called on ProjectileReceiver"));
+
+	if (OtherActor)
+	{
+		AProjectile* OverlappingActor = Cast<AProjectile>(OtherActor);
+
+		if (OverlappingActor == Projectile)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CollidingActor is Projectile"));
+			bHasSystemCompleted = true;
+			Projectile->GetStaticMesh()->SetSimulatePhysics(false);
+			Projectile->GetStaticMesh()->SetWorldLocation(ProjectileReceiver->GetTriggerVolume()->GetComponentLocation());
+		}
+	}
 }

@@ -19,27 +19,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Projectile")
 	class UStaticMeshComponent* StaticMesh;
 
-	// Projectile Speed
-	UPROPERTY()
-	float ProjectileSpeed;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-private:
-	UPROPERTY()
-	bool bShouldMove;
-
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	FORCEINLINE UStaticMeshComponent* GetStaticMesh() { return StaticMesh; }
-	FORCEINLINE float GetProjectileSpeed() const { return ProjectileSpeed; }
-	FORCEINLINE	void SetProjectileSpeed(float Speed) { ProjectileSpeed = Speed; }
-	FORCEINLINE bool GetProjectileShouldMove() const { return bShouldMove; }
-	FORCEINLINE void SetProjectileShouldMove(bool Value) { bShouldMove = Value; }
 
-	void MoveProjectile(float DeltaTime);
 };

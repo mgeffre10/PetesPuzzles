@@ -9,39 +9,16 @@
 AProjectile::AProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetupAttachment(GetRootComponent());
 
+	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
-
-	bShouldMove = true;
-}
-
-// Called when the game starts or when spawned
-void AProjectile::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (bShouldMove)
-	{
-		MoveProjectile(DeltaTime);
-	}
-}
-
-void AProjectile::MoveProjectile(float DeltaTime)
-{
-	FVector NewLocation = GetActorLocation();
-	NewLocation += GetActorForwardVector() * (DeltaTime * ProjectileSpeed);
-	SetActorLocation(NewLocation);
+	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }

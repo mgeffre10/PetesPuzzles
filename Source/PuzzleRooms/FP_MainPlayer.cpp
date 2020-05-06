@@ -4,11 +4,11 @@
 #include "FP_MainPlayer.h"
 #include "InteractableObject.h"
 #include "Camera/CameraComponent.h"
-#include "Components/ActorComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/World.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "PhysicsEngine/BodyInstance.h"
+
 // Sets default values
 AFP_MainPlayer::AFP_MainPlayer()
 {
@@ -17,9 +17,12 @@ AFP_MainPlayer::AFP_MainPlayer()
 	
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCamera->SetupAttachment(GetRootComponent());
-	FirstPersonCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	FirstPersonCamera->SetRelativeLocation(FVector(-40.f, 1.75f, 64.f));
 	FirstPersonCamera->bUsePawnControlRotation = true;
 
+	// Set Collision on Projectiles to Overlap
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 }
 
 // Called when the game starts or when spawned

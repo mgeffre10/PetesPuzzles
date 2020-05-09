@@ -21,6 +21,7 @@ AProjectileReceiver::AProjectileReceiver()
 	TriggerVolume->SetupAttachment(GetRootComponent());
 
 	TriggerVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerVolume->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	TriggerVolume->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	TriggerVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 }

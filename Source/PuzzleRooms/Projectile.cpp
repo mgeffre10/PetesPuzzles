@@ -19,6 +19,8 @@ AProjectile::AProjectile()
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
+	StaticMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }

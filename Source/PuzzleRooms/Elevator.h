@@ -24,7 +24,7 @@ public:
 	class UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Elevator")
-		FVector InitialElevatorPosition;
+	FVector InitialElevatorPosition;
 
 protected:
 	// Called when the game starts or when spawned

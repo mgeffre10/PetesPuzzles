@@ -41,57 +41,50 @@ void APortalSystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
+	//FVector CameraLocation = PlayerController->PlayerCameraManager->GetTransformComponent()->GetComponentLocation();
 	FRotator CameraRotation = PlayerController->PlayerCameraManager->GetTransformComponent()->GetComponentRotation();
 
+	/*SourcePortal->GetPortal()->SetWorldLocation((SourcePortal->GetPortal()->GetComponentLocation() - DestinationPortal->GetPortal()->GetComponentLocation()) + CameraLocation);
+	DestinationPortal->GetPortal()->SetWorldLocation((DestinationPortal->GetPortal()->GetComponentLocation() - SourcePortal->GetPortal()->GetComponentLocation()) + CameraLocation);*/
 	FRotator SourceView = CameraRotation;
 	FRotator DestinationView = CameraRotation;
 
-	SourceView.Yaw += CalculatePortalView(SourcePortal);
-	DestinationView.Yaw += CalculatePortalView(DestinationPortal);
+	SourceView.Yaw += CalculatePortalView(DestinationPortal);
+	DestinationView.Yaw += CalculatePortalView(SourcePortal);
 
-	DestinationPortal->GetPortal()->SetWorldRotation(CameraRotation + DestinationView);
-	SourcePortal->GetPortal()->SetWorldRotation(CameraRotation + SourceView);
+	DestinationPortal->GetPortal()->SetWorldRotation(DestinationView);
+	SourcePortal->GetPortal()->SetWorldRotation(SourceView);
 }
 
 float APortalSystem::CalculatePortalView(APortalDoorway* TargetPortal)
 {
-	float SourcePortalYawRotation = SourcePortal->GetPortal()->GetComponentRotation().Yaw;
-	float DestinationPortalYawRotation = DestinationPortal->GetPortal()->GetComponentRotation().Yaw;
+	float SourcePortalYawRotation = SourcePortal->GetActorRotation().Yaw;
+	float DestinationPortalYawRotation = DestinationPortal->GetActorRotation().Yaw;
+
+	float AdjustmentValue = 0.f;
 
 	if (SourcePortalYawRotation == DestinationPortalYawRotation)
 	{
-		return 180.f;
+		AdjustmentValue = 180.f;
 	}
-	else if (SourcePortalYawRotation + DestinationPortalYawRotation == 360.f)
+	else if (FMath::CeilToInt(FMath::Abs(SourcePortalYawRotation - DestinationPortalYawRotation)) == 180.f)
 	{
-		return 0.f;
+		// Keep return value at 0.f
 	}
-
-	if (TargetPortal == SourcePortal)
+	else
 	{
-		if (SourcePortalYawRotation == 0 || DestinationPortalYawRotation == 0)
+		if (TargetPortal == SourcePortal)
 		{
-			return DestinationPortalYawRotation - (180.f - SourcePortalYawRotation);
+			AdjustmentValue = SourcePortalYawRotation - DestinationPortalYawRotation;
 		}
 		else
 		{
-			return SourcePortalYawRotation - DestinationPortalYawRotation;
-		}
-	}
-	else if (TargetPortal == DestinationPortal)
-	{
-		if (SourcePortalYawRotation == 0 || DestinationPortalYawRotation == 0)
-		{
-			return SourcePortalYawRotation - (180.f - DestinationPortalYawRotation);
-		}
-		else
-		{
-			return DestinationPortalYawRotation - SourcePortalYawRotation;
+			AdjustmentValue = DestinationPortalYawRotation - SourcePortalYawRotation;
 		}
 	}
 
-	return 0.f;
+	UE_LOG(LogTemp, Warning, TEXT("Adjustment Value: %f"), AdjustmentValue);
+	return AdjustmentValue;
 }
 
 void APortalSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -124,7 +117,7 @@ void APortalSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 						FVector NewLocation = DestinationPortal->GetActorLocation() + (DestinationPortalForwardVector * 100.f);
 						
 						Player->SetActorLocation(NewLocation);
-						PlayerController->SetControlRotation(DestinationPortal->GetActorRotation());
+						PlayerController->SetControlRotation(FRotator(PlayerController->GetControlRotation().Pitch, DestinationPortal->GetActorRotation().Yaw, PlayerController->GetControlRotation().Roll));
 					}
 				}
 			}
@@ -141,7 +134,8 @@ void APortalSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 						FVector NewLocation = SourcePortal->GetActorLocation() + (SourcePortalForwardVector * 100.f);
 
 						Player->SetActorLocation(NewLocation);
-						PlayerController->SetControlRotation(SourcePortal->GetActorRotation());
+						PlayerController->SetControlRotation(FRotator(PlayerController->GetControlRotation().Pitch, SourcePortal->GetActorRotation().Yaw, PlayerController->GetControlRotation().Roll));
+
 					}
 				}
 			}

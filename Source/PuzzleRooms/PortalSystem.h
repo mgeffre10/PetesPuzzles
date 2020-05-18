@@ -27,6 +27,12 @@ public:
 	FVector DestinationPortalLocation;
 	bool bCanTeleport;
 
+	UPROPERTY(EditAnywhere, Category = "Portal System")
+	float DestinationViewTest;
+
+	UPROPERTY(EditAnywhere, Category = "Portal System")
+	float SourceViewTest;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

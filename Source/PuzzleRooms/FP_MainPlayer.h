@@ -18,15 +18,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera")
 	class UCameraComponent* FirstPersonCamera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Liftables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactions")
 	bool bIsHoldingObject;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Liftables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactions")
 	class AInteractableObject* HeldObjectRef;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Liftables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactions")
 	class UStaticMeshComponent* HeldObjectStaticMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interactions")
+	bool bIsOverlappingButtonVolume;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interactions")
+	class APortalSystem* PortalSystemReference;
+	
 	AInteractableObject* TracedObject;
 
 	FHitResult HitResult;
@@ -42,7 +48,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FORCEINLINE void SetPortalSystemReference(APortalSystem* PortalSystem) { PortalSystemReference = PortalSystem; }
+	FORCEINLINE APortalSystem* GetPortalSystemReference() const { return PortalSystemReference; }
+
+	FORCEINLINE void SetIsOverlappingButtonVolume(bool IsOverlapping) { bIsOverlappingButtonVolume = IsOverlapping; }
+	FORCEINLINE bool GetIsOverlappingButtonVolume() const { return bIsOverlappingButtonVolume; }
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void PickUpObject();
+	void DetermineInteraction();
 };

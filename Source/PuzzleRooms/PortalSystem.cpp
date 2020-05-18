@@ -4,6 +4,7 @@
 #include "PortalSystem.h"
 #include "PortalDoorway.h"
 #include "FP_MainPlayer.h"
+#include "StandaloneButton.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
@@ -17,7 +18,6 @@ APortalSystem::APortalSystem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	bCanTeleport = true;
 }
 
 // Called when the game starts or when spawned
@@ -25,15 +25,18 @@ void APortalSystem::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Get Player Controller
 	PlayerController = GetWorld()->GetFirstPlayerController();
 
-	// Subtract Source and Destination Portal Location vectors
-	SourcePortalLocation = SourcePortal->GetRootComponent()->GetComponentLocation();
-	DestinationPortalLocation = DestinationPortal->GetRootComponent()->GetComponentLocation();
+	// Ensure Destination Portal starting position is first element
+	DestinationPortalLocations.Insert(DestinationPortal->GetActorLocation(), 0);
 
-	SourcePortal->GetPortalMesh()->OnComponentBeginOverlap.AddDynamic(this, &APortalSystem::OnOverlapBegin);
-	DestinationPortal->GetPortalMesh()->OnComponentBeginOverlap.AddDynamic(this, &APortalSystem::OnOverlapBegin);
+	CurrentDestinationIndex = 0;
+
+	SourcePortal->GetPortalMesh()->OnComponentBeginOverlap.AddDynamic(this, &APortalSystem::OnPortalOverlapBegin);
+	DestinationPortal->GetPortalMesh()->OnComponentBeginOverlap.AddDynamic(this, &APortalSystem::OnPortalOverlapBegin);
+
+	PortalControlButton->GetTriggerVolume()->OnComponentBeginOverlap.AddDynamic(this, &APortalSystem::OnButtonOverlapBegin);
+	PortalControlButton->GetTriggerVolume()->OnComponentEndOverlap.AddDynamic(this, &APortalSystem::OnButtonOverlapEnd);
 }
 
 // Called every frame
@@ -41,11 +44,8 @@ void APortalSystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//FVector CameraLocation = PlayerController->PlayerCameraManager->GetTransformComponent()->GetComponentLocation();
 	FRotator CameraRotation = PlayerController->PlayerCameraManager->GetTransformComponent()->GetComponentRotation();
 
-	/*SourcePortal->GetPortal()->SetWorldLocation((SourcePortal->GetPortal()->GetComponentLocation() - DestinationPortal->GetPortal()->GetComponentLocation()) + CameraLocation);
-	DestinationPortal->GetPortal()->SetWorldLocation((DestinationPortal->GetPortal()->GetComponentLocation() - SourcePortal->GetPortal()->GetComponentLocation()) + CameraLocation);*/
 	FRotator SourceView = CameraRotation;
 	FRotator DestinationView = CameraRotation;
 
@@ -83,20 +83,11 @@ float APortalSystem::CalculatePortalView(APortalDoorway* TargetPortal)
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Adjustment Value: %f"), AdjustmentValue);
 	return AdjustmentValue;
 }
 
-void APortalSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APortalSystem::OnPortalOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlap in PortalSystem occured."));
-
-	if (bCanTeleport)
-	{
-		bCanTeleport = false;
-		//PlayerController->GetOwner()->SetActorLocation();
-	}
-
 	if (SweepResult.GetActor())
 	{
 		APortalDoorway* Portal = Cast<APortalDoorway>(SweepResult.GetActor());
@@ -145,8 +136,40 @@ void APortalSystem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 	
 }
 
-void APortalSystem::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APortalSystem::OnButtonOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+	if (OtherActor)
+	{
+		AFP_MainPlayer* Player = Cast<AFP_MainPlayer>(OtherActor);
+
+		if (Player)
+		{
+			Player->SetIsOverlappingButtonVolume(true);
+			Player->SetPortalSystemReference(this);
+
+			PortalControlButton->SetMaterialToInRange();
+		}
+	}
 }
 
+void APortalSystem::OnButtonOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		AFP_MainPlayer* Player = Cast<AFP_MainPlayer>(OtherActor);
+
+		if (Player)
+		{
+			Player->SetIsOverlappingButtonVolume(false);
+			Player->SetPortalSystemReference(nullptr);
+
+			PortalControlButton->SetMaterialToOutOfRange();
+		}
+	}
+}
+
+void APortalSystem::UpdatePortalDestination()
+{
+	CurrentDestinationIndex = (CurrentDestinationIndex + 1) % DestinationPortalLocations.Num();
+	DestinationPortal->SetActorLocation(DestinationPortalLocations[CurrentDestinationIndex]);
+}

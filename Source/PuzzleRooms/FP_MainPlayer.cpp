@@ -3,6 +3,8 @@
 
 #include "FP_MainPlayer.h"
 #include "InteractableObject.h"
+#include "PortalSystem.h"
+
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -23,6 +25,8 @@ AFP_MainPlayer::AFP_MainPlayer()
 	// Set Collision on Projectiles to Overlap
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+
+	bIsOverlappingButtonVolume = false;
 }
 
 // Called when the game starts or when spawned
@@ -51,8 +55,6 @@ void AFP_MainPlayer::Tick(float DeltaTime)
 			{
 				TracedObject = HitActor;
 				UStaticMeshComponent* TracedObjectMeshComponent = Cast<UStaticMeshComponent>(TracedObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-				TracedObjectMeshComponent->SetRenderCustomDepth(true);
-				TracedObjectMeshComponent->SetCustomDepthStencilValue(2);
 			}
 		}
 		else
@@ -83,7 +85,7 @@ void AFP_MainPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAction(TEXT("PickUp"), IE_Pressed, this, &AFP_MainPlayer::PickUpObject);
+	PlayerInputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &AFP_MainPlayer::DetermineInteraction);
 }
 
 void AFP_MainPlayer::MoveForward(float Value)
@@ -102,6 +104,18 @@ void AFP_MainPlayer::MoveRight(float Value)
 	}
 }
 
+void AFP_MainPlayer::DetermineInteraction()
+{
+	if (bIsOverlappingButtonVolume && PortalSystemReference)
+	{
+		PortalSystemReference->UpdatePortalDestination();
+	}
+	else
+	{
+		PickUpObject();
+	}
+}
+
 void AFP_MainPlayer::PickUpObject()
 {
 	if (!bIsHoldingObject)
@@ -113,20 +127,12 @@ void AFP_MainPlayer::PickUpObject()
 			HeldObjectRef->SetActorRotation(FRotator::ZeroRotator);
 			HeldObjectStaticMesh = Cast<UStaticMeshComponent>(HeldObjectRef->GetComponentByClass(UStaticMeshComponent::StaticClass()));
 			HeldObjectStaticMesh->SetEnableGravity(false);
-
-			HeldObjectStaticMesh->BodyInstance.bLockXRotation = true;
-			HeldObjectStaticMesh->BodyInstance.bLockYRotation = true;
-			HeldObjectStaticMesh->BodyInstance.bLockZRotation = true;
 		}
 	}
 	else
 	{
 		bIsHoldingObject = false;
 		HeldObjectStaticMesh->SetEnableGravity(true);
-
-		HeldObjectStaticMesh->BodyInstance.bLockXRotation = false;
-		HeldObjectStaticMesh->BodyInstance.bLockYRotation = false;
-		HeldObjectStaticMesh->BodyInstance.bLockZRotation = false;
 
 		HeldObjectRef = nullptr;
 	}

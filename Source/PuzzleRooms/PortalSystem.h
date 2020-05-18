@@ -18,20 +18,22 @@ public:
 	// Reference to Source Portal BP
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Portal System")
 	class APortalDoorway* SourcePortal;
+
 	// Reference to Destination Portal BP
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Portal System")
 	class APortalDoorway* DestinationPortal;
+
+	// Reference to Standalone Button
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Portal System")
+	class AStandaloneButton* PortalControlButton;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Portal System")
+	TArray<FVector> DestinationPortalLocations;
+
+	UPROPERTY(VisibleAnywhere, Category = "Portal System")
+	int32 CurrentDestinationIndex;
+
 	class APlayerController* PlayerController;
-	FVector SourcePortalLocation;
-	FVector DestinationPortalLocation;
-	bool bCanTeleport;
-
-	UPROPERTY(EditAnywhere, Category = "Portal System")
-	float DestinationViewTest;
-
-	UPROPERTY(EditAnywhere, Category = "Portal System")
-	float SourceViewTest;
 
 protected:
 	// Called when the game starts or when spawned
@@ -45,8 +47,14 @@ public:
 	float CalculatePortalView(APortalDoorway* TargetPortal);
 
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnPortalOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnButtonOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnButtonOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdatePortalDestination();
 };

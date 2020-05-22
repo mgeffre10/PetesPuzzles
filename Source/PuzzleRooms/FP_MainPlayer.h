@@ -27,12 +27,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactions")
 	class UStaticMeshComponent* HeldObjectStaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interactions")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Portals")
 	bool bIsOverlappingButtonVolume;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interactions")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Portals")
 	class APortalSystem* PortalSystemReference;
-	
+
 	AInteractableObject* TracedObject;
 
 	FHitResult HitResult;

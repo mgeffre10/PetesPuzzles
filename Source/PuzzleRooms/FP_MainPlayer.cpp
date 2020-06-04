@@ -5,11 +5,14 @@
 #include "InteractableObject.h"
 #include "PortalSystem.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "PhysicsEngine/BodyInstance.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 // Sets default values
 AFP_MainPlayer::AFP_MainPlayer()
@@ -27,6 +30,13 @@ AFP_MainPlayer::AFP_MainPlayer()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 	bIsOverlappingButtonVolume = false;
+
+	PerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliSource"));
+
+	PerceptionStimuliSourceComponent->RegisterForSense(TSubclassOf<UAISense_Sight>());
+
+	Health = 100.f;
+
 }
 
 // Called when the game starts or when spawned
@@ -135,5 +145,13 @@ void AFP_MainPlayer::PickUpObject()
 		HeldObjectStaticMesh->SetEnableGravity(true);
 
 		HeldObjectRef = nullptr;
+	}
+}
+
+void AFP_MainPlayer::ReduceHealth(float Amount)
+{
+	if (Health > 0)
+	{
+		Health -= Amount;
 	}
 }

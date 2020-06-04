@@ -33,6 +33,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Portals")
 	class APortalSystem* PortalSystemReference;
 
+	// Perception Stimulus
+	UPROPERTY(VisibleAnywhere, Category = "Perception")
+	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Stats")
+	float Health;
+
 	AInteractableObject* TracedObject;
 
 	FHitResult HitResult;
@@ -53,6 +60,10 @@ public:
 
 	FORCEINLINE void SetIsOverlappingButtonVolume(bool IsOverlapping) { bIsOverlappingButtonVolume = IsOverlapping; }
 	FORCEINLINE bool GetIsOverlappingButtonVolume() const { return bIsOverlappingButtonVolume; }
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	void ReduceHealth(float Amount);
+	FORCEINLINE void IncreaseHealth(float Amount) { Health += Amount; }
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);

@@ -37,7 +37,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Perception")
 	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = "Player Stats")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	float Health;
 
 	AInteractableObject* TracedObject;
@@ -69,4 +69,10 @@ public:
 	void MoveRight(float Value);
 	void PickUpObject();
 	void DetermineInteraction();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateHealthWidget();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerGotHurt();
 };

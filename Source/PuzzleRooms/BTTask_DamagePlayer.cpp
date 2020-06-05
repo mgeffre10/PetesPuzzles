@@ -29,6 +29,7 @@ EBTNodeResult::Type UBTTask_DamagePlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	}
 
 	Player->ReduceHealth(DamageAmount);
+	Player->UpdateHealthWidget();
 
 	return EBTNodeResult::Succeeded;
 }

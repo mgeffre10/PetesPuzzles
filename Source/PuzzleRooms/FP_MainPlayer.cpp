@@ -153,5 +153,6 @@ void AFP_MainPlayer::ReduceHealth(float Amount)
 	if (Health > 0)
 	{
 		Health -= Amount;
+		PlayerGotHurt();
 	}
 }
